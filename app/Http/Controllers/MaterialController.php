@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\MaterialImport;
+use Illuminate\Validation\Rule;
+use App\Models\MaterialHistory;
+
+
 
 class MaterialController extends Controller
 {
@@ -37,6 +41,10 @@ class MaterialController extends Controller
      */
     public function store(Request $request)
     {
+         \Log::info('Masuk ke MaterialController@store', [
+        'method' => $request->method(),
+        'data' => $request->all()
+    ]);
         $validator = Validator::make($request->all(), [
             'company_code' => 'required|string|max:10',
             'company_code_description' => 'required|string|max:100',
@@ -46,12 +54,17 @@ class MaterialController extends Controller
             'storage_location_description' => 'required|string|max:100',
             'material_type' => 'required|string|max:10',
             'material_type_description' => 'required|string|max:100',
-            'material_code' => 'required|string|max:50|unique:materials,material_code',
+             'material_code' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('materials')->whereNull('deleted_at'),
+            ],
             'material_description' => 'required|string|max:255',
             'material_group' => 'required|string|max:20',
             'base_unit_of_measure' => 'required|string|max:10',
             'valuation_type' => 'required|string|max:20',
-            'unrestricted_use_stock' => 'required|numeric|min:0',
+            // 'unrestricted_use_stock' => 'required|numeric|min:0',
             'quality_inspection_stock' => 'nullable|numeric|min:0',
             'blocked_stock' => 'nullable|numeric|min:0',
             'in_transit_stock' => 'nullable|numeric|min:0',
@@ -59,18 +72,18 @@ class MaterialController extends Controller
             'valuation_class' => 'required|string|max:10',
             'valuation_description' => 'required|string|max:100',
             'harga_satuan' => 'required|numeric|min:0',
-            'total_harga' => 'required|numeric|min:0',
-            'currency' => 'required|string|max:3',
-            'pabrikan' => 'required|string|max:100',
-            'qty' => 'required|integer|min:1',
-            'tanggal_terima' => 'required|date',
-            'keterangan' => 'nullable|string|max:255',
+            // 'total_harga' => 'required|numeric|min:0',
+            // 'currency' => 'required|string|max:3',
+            // 'pabrikan' => 'required|string|max:100',
+            // 'qty' => 'required|integer|min:1',
+            // 'tanggal_terima' => 'required|date',
+            // 'keterangan' => 'nullable|string|max:255',
             'rak' => 'nullable|string|max:50',
-            'status' => 'required|in:' . implode(',', [
-                Material::STATUS_BAIK,
-                Material::STATUS_RUSAK,
-                Material::STATUS_DALAM_PERBAIKAN
-            ]),
+            // 'status' => 'required|in:' . implode(',', [
+            //     Material::STATUS_BAIK,
+            //     Material::STATUS_RUSAK,
+            //     Material::STATUS_DALAM_PERBAIKAN
+            // ]),
         ], [
             'company_code.required' => 'Company Code wajib diisi',
             'plant.required' => 'Plant wajib diisi',
@@ -104,7 +117,7 @@ class MaterialController extends Controller
 
             $materialData = $request->all();
             $materialData['nomor'] = $nextNomor;
-            $materialData['tanggal_terima'] = Carbon::parse($request->tanggal_terima);
+            // $materialData['tanggal_terima'] = Carbon::parse($request->tanggal_terima);
             
             \Illuminate\Support\Facades\Log::info('Material data to be saved:', $materialData);
 
@@ -217,27 +230,27 @@ class MaterialController extends Controller
             'material_description' => 'required|string|max:255',
             'material_group' => 'required|string|max:20',
             'base_unit_of_measure' => 'required|string|max:10',
-            'valuation_type' => 'required|string|max:20',
+            // 'valuation_type' => 'required|string|max:20',
             'unrestricted_use_stock' => 'required|numeric|min:0',
-            'quality_inspection_stock' => 'nullable|numeric|min:0',
-            'blocked_stock' => 'nullable|numeric|min:0',
-            'in_transit_stock' => 'nullable|numeric|min:0',
+            // 'quality_inspection_stock' => 'nullable|numeric|min:0',
+            // 'blocked_stock' => 'nullable|numeric|min:0',
+            // 'in_transit_stock' => 'nullable|numeric|min:0',
             'project_stock' => 'nullable|numeric|min:0',
-            'valuation_class' => 'required|string|max:10',
-            'valuation_description' => 'required|string|max:100',
-            'harga_satuan' => 'required|numeric|min:0',
-            'total_harga' => 'required|numeric|min:0',
-            'currency' => 'required|string|max:3',
-            'pabrikan' => 'required|string|max:100',
-            'qty' => 'required|integer|min:1',
-            'tanggal_terima' => 'required|date',
-            'keterangan' => 'nullable|string|max:255',
+            // 'valuation_class' => 'required|string|max:10',
+            // 'valuation_description' => 'required|string|max:100',
+            // 'harga_satuan' => 'required|numeric|min:0',
+            // 'total_harga' => 'required|numeric|min:0',
+            // 'currency' => 'required|string|max:3',
+            // 'pabrikan' => 'required|string|max:100',
+            // 'qty' => 'required|integer|min:1',
+            // 'tanggal_terima' => 'required|date',
+            // 'keterangan' => 'nullable|string|max:255',
             'rak' => 'nullable|string|max:50',
-            'status' => 'required|in:' . implode(',', [
-                Material::STATUS_BAIK,
-                Material::STATUS_RUSAK,
-                Material::STATUS_DALAM_PERBAIKAN
-            ]),
+            // 'status' => 'required|in:' . implode(',', [
+            //     Material::STATUS_BAIK,
+            //     Material::STATUS_RUSAK,
+            //     Material::STATUS_DALAM_PERBAIKAN
+            // ]),
         ]);
 
         if ($validator->fails()) {
@@ -246,7 +259,7 @@ class MaterialController extends Controller
 
         try {
             $materialData = $request->all();
-            $materialData['tanggal_terima'] = Carbon::parse($request->tanggal_terima);
+            // $materialData['tanggal_terima'] = Carbon::parse($request->tanggal_terima);
 
             $material->update($materialData);
 
@@ -335,52 +348,94 @@ class MaterialController extends Controller
     /**
      * API untuk pencarian material (AJAX)
      */
-    public function search(Request $request)
-    {
-        $query = $request->get('q');
-        
-        $materials = Material::where(function($q) use ($query) {
-                                $q->whereRaw('LOWER(material_code) LIKE ?', ['%' . strtolower($query) . '%'])
-                                  ->orWhereRaw('LOWER(material_description) LIKE ?', ['%' . strtolower($query) . '%']);
-                            })
-                            ->select('id', 'nomor_kr', 'material_description', 'qty', 'base_unit_of_measure')
-                            ->limit(10)
-                            ->get();
-        
-        return response()->json($materials);
+public function search(Request $request)
+{
+    // $term = $request->get('term', '');
+    
+    $term = strtolower($request->get('term', ''));
+
+$materials = Material::query()
+    ->whereRaw('LOWER(material_description) LIKE ?', ["%{$term}%"])
+    ->orWhereRaw('LOWER(material_code) LIKE ?', ["%{$term}%"])
+    ->take(20)
+    ->get(['id', 'material_code', 'material_description', 'base_unit_of_measure']);
+
+
+    // Format hasil agar lebih rapi dan tidak error
+    return response()->json($materials->map(function ($item) {
+        return [
+            'id' => $item->id,
+            'material_code' => $item->material_code,
+            'material_description' => $item->material_description,
+            // 'satuan' => $item->base_unit_of_measure ?? 'PCS', // fallback PCS
+            'satuan' => $item->base_unit_of_measure ?? 'BH',
+
+        ];
+    }));
+}
+
+
+public function getMaterialById($id)
+{
+    try {
+        $material = \App\Models\Material::find($id);
+
+        if (!$material) {
+            return response()->json(['error' => 'Material tidak ditemukan'], 404);
+        }
+
+        return response()->json([
+            'id' => $material->id,
+            'material_code' => $material->material_code, // ← ini yang akan diisi ke kolom Normalisasi
+            'material_description' => $material->material_description,
+            // 'satuan' => $material->satuan ?? 'PCS',
+            'satuan' => $material->base_unit_of_measure ?? 'BH',
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Terjadi kesalahan: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
     /**
      * API untuk autocomplete material berdasarkan normalisasi
      */
     public function autocomplete(Request $request)
-    {
-        $query = $request->get('query') ?: $request->get('q');
-        
-        if (strlen($query) < 3) {
-            return response()->json([]);
-        }
-        
-        $materials = Material::where(function($q) use ($query) {
-                                $q->whereRaw('LOWER(material_code) LIKE ?', ['%' . strtolower($query) . '%'])
-                                  ->orWhereRaw('LOWER(material_description) LIKE ?', ['%' . strtolower($query) . '%']);
-                            })
-                            ->select('id', 'material_code', 'material_description', 'base_unit_of_measure', 'unrestricted_use_stock')
-                            ->limit(10)
-                            ->get()
-                            ->map(function($material) {
-                                return [
-                                    'id' => $material->id,
-                                    'text' => $material->material_code . ' - ' . $material->material_description,
-                                    'material_code' => $material->material_code,
-                                    'material_description' => $material->material_description,
-                                    'base_unit_of_measure' => $material->base_unit_of_measure,
-                                    'unrestricted_use_stock' => $material->unrestricted_use_stock
-                                ];
-                            });
-        
-        return response()->json($materials);
+{
+    // support semua kemungkinan
+    $query = $request->get('term') 
+             ?? $request->get('q') 
+             ?? $request->get('query') 
+             ?? '';
+
+    $query = strtolower($query);
+
+    if (strlen($query) < 1) {
+        return response()->json([]);
     }
+
+    $materials = Material::where(function ($q) use ($query) {
+            $q->whereRaw('LOWER(material_description) LIKE ?', ["%{$query}%"])
+              ->orWhereRaw('LOWER(material_code) LIKE ?', ["%{$query}%"]);
+        })
+        ->select('id', 'material_code', 'material_description', 'base_unit_of_measure', 'unrestricted_use_stock')
+        ->limit(10)
+        ->get();
+
+    return response()->json($materials->map(function ($m) {
+        return [
+            'id' => $m->id,
+            'material_code' => $m->material_code,
+            'material_description' => $m->material_description,
+            'unrestricted_use_stock' => (int) $m->unrestricted_use_stock,
+            'base_unit_of_measure' => $m->base_unit_of_measure ?? 'BH',
+            'satuan' => $m->base_unit_of_measure ?? 'BH', // ✅ Ganti ini!
+        ];
+    }));
+}
+
 
     /**
      * Get data untuk DataTables AJAX endpoint
@@ -600,4 +655,5 @@ class MaterialController extends Controller
             'data' => $material
         ]);
     }
+
 }

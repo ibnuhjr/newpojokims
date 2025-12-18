@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('kepada');
             $table->text('alamat');
             $table->string('keterangan')->nullable();
-            $table->enum('status', ['BUTUH_PERSETUJUAN', 'APPROVED'])->default('BUTUH_PERSETUJUAN');
+            $table->enum('status',['BUTUH_PERSETUJUAN','APPROVED','SELESAI'])->default('BUTUH_PERSETUJUAN');
             $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('approved_by')->nullable();
             $table->timestamp('approved_at')->nullable();

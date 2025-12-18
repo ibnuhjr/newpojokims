@@ -7,22 +7,34 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Daftar Surat Jalan</h3>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Daftar Surat Jalan</h3>
                     <div class="card-tools">
                         <a href="{{ route('surat-jalan.create') }}" class="btn btn-primary">
                             <i class="fa fa-plus"></i> Buat Surat Jalan
                         </a>
-                        @if(auth()->user()->isAdmin())
+                        <!-- @if(auth()->user()->isAdmin())
                         <a href="{{ route('surat-jalan.approval') }}" class="btn btn-success">
                             <i class="fa fa-check"></i> Approval
                         </a>
-                        @endif
+                        @endif -->
                     </div>
                 </div>
+
                 <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="filterStatus">Filter Status</label>
+                            <select id="filterStatus" class="form-select">
+                                <option value="">— Semua Status —</option>
+                                <option value="BUTUH_PERSETUJUAN">Butuh Persetujuan</option>
+                                <option value="APPROVED">Approved</option>
+                                <option value="SELESAI">Selesai</option>
+                            </select>
+                        </div>
+                    </div>  
                     <div class="table-responsive">
-                        <table id="suratJalanTable" class="table table-bordered table-striped">
+                        <table id="suratJalanTable" class="table table-bordered table-striped" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>No</th>
@@ -30,7 +42,7 @@
                                     <th>Tanggal</th>
                                     <th>Diberikan Kepada</th>
                                     <th>Berdasarkan</th>
-                                    <th>Untuk Pekerjaan</th>
+                                    <th>Keterangan</th>
                                     <th>Status</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -42,15 +54,38 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Detail Surat Jalan -->
+<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="detailModalLabel">Detail Surat Jalan</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body" id="detailModalBody"></div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+          </div>
+      </div>
+  </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#suratJalanTable').DataTable({
+    var table = $('#suratJalanTable').DataTable({
         processing: true,
         serverSide: true,
-        ajax: '{{ route("surat-jalan.data") }}',
+        ajax: {
+            url: '{{ route("surat-jalan.getData") }}',
+            data: function (d) {
+                d.status = $('#filterStatus').val(); // ⬅️ filter status masuk di sini
+            }
+        },
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
             { data: 'nomor_surat', name: 'nomor_surat' },
@@ -58,12 +93,37 @@ $(document).ready(function() {
             { data: 'kepada', name: 'kepada' },
             { data: 'berdasarkan', name: 'berdasarkan' },
             { data: 'keterangan', name: 'keterangan' },
-            { data: 'status', name: 'status' },
+            { data: 'status', name: 'status', orderable: false, searchable: false },
             { data: 'action', name: 'action', orderable: false, searchable: false }
         ],
         responsive: true
     });
+
+    // ⬇️ Tambahkan ini
+    $('#filterStatus').on('change', function () {
+        table.ajax.reload();
+    });
 });
+
+// Popup detail surat jalan
+function showDetailSuratJalan(id) {
+    $.ajax({
+        url: '/surat-jalan/' + id + '/modal-detail',
+        type: 'GET',
+        success: function(response) {
+            if (response.success) {
+                $('#detailModalBody').html(response.html);
+                $('#detailModal').modal('show');
+            } else {
+                Swal.fire('Error!', response.message, 'error');
+            }
+        },
+        error: function() {
+            Swal.fire('Error!', 'Terjadi kesalahan saat memuat detail surat jalan.', 'error');
+        }
+    });
+}
+
 
 function deleteSuratJalan(id) {
     Swal.fire({
@@ -80,9 +140,7 @@ function deleteSuratJalan(id) {
             $.ajax({
                 url: '/surat-jalan/' + id,
                 type: 'DELETE',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
+                data: { _token: '{{ csrf_token() }}' },
                 success: function(response) {
                     if (response.success) {
                         Swal.fire('Berhasil!', response.message, 'success');
@@ -102,15 +160,5 @@ function deleteSuratJalan(id) {
 function printSuratJalan(id) {
     window.open('{{ route("surat-jalan.export", ":id") }}'.replace(':id', id), '_blank');
 }
-
-// Handle SweetAlert for session messages
-@if(session('swal_error'))
-    Swal.fire({
-        icon: 'error',
-        title: 'Akses Ditolak!',
-        text: '{{ session("swal_error") }}',
-        confirmButtonText: 'OK'
-    });
-@endif
 </script>
 @endpush

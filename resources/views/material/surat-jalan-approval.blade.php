@@ -621,21 +621,30 @@ function viewDetail(id) {
 
 // Approve function
 function approveSuratJalan(id) {
+    console.log("🔍 Memuat detail untuk approval ID:", id);
     currentApprovalId = id;
-    
-    // Load surat jalan detail first
+
     $.ajax({
-        url: `{{ url('surat-jalan') }}/${id}/modal-detail`,
+        url: `{{ route('surat-jalan.modal-detail', ':id') }}`.replace(':id', id),
         type: 'GET',
         success: function(response) {
-            $('#approvalDetailContent').html(response);
-            $('#approvalModal').modal('show');
+            if (response.success) {
+                $('#approvalDetailContent').html(response.html);
+                $('#approvalModal').modal('show');
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: response.message || 'Tidak bisa memuat detail surat jalan.'
+                });
+            }
         },
-        error: function() {
+        error: function(xhr) {
+            console.error('XHR Error:', xhr.responseText);
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
-                text: 'Gagal memuat detail surat jalan untuk approval.'
+                text: 'Terjadi kesalahan saat memuat detail surat jalan.'
             });
         }
     });
@@ -722,5 +731,10 @@ function deleteSuratJalan(id) {
         }
     });
 }
+$(document).on('click', '.btn-approve', function() {
+    const id = $(this).data('id');
+    approveSuratJalan(id);
+});
+
 </script>
 @endpush

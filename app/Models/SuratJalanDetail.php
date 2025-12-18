@@ -17,22 +17,27 @@ class SuratJalanDetail extends Model
         'material_id',
         'quantity',
         'satuan',
-        'keterangan'
+        'keterangan',
+        'is_manual',
+        'nama_barang_manual',
+        'satuan_manual',
+        'jumlah_kembali',
+        'tanggal_kembali',
     ];
 
-    /**
-     * Relasi ke surat jalan
-     */
     public function suratJalan(): BelongsTo
     {
-        return $this->belongsTo(SuratJalan::class);
+        return $this->belongsTo(SuratJalan::class, 'surat_jalan_id', 'id');
     }
 
-    /**
-     * Relasi ke material
-     */
     public function material(): BelongsTo
     {
-        return $this->belongsTo(Material::class);
+        return $this->belongsTo(Material::class, 'material_id', 'id');
     }
+    public function pengembalianHistories()
+{
+    return $this->hasMany(\App\Models\PengembalianHistory::class, 'surat_jalan_detail_id');
+}
+
+
 }

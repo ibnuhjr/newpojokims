@@ -12,13 +12,20 @@ class MaterialMasuk extends Model
 
     protected $table = 'material_masuk';
 
-    protected $fillable = [
-        'nomor_kr',
-        'pabrikan',
-        'tanggal_masuk',
-        'keterangan',
-        'created_by'
-    ];
+protected $fillable = [
+    'nomor_kr',
+    'pabrikan',
+    'tanggal_masuk',
+    'tanggal_keluar',
+    'jenis',
+    'nomor_po',
+    'nomor_doc',
+    'tugas_4',
+    'keterangan',
+    'status_sap',
+    // 'tanggal_sap',
+    'created_by',
+];
 
     protected $casts = [
         'tanggal_masuk' => 'date',

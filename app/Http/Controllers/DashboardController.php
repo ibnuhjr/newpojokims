@@ -10,6 +10,7 @@ use App\Models\SuratJalan;
 use Yajra\DataTables\Facades\DataTables;
 use App\Exports\MaterialExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\Monitoring;
 
 class DashboardController extends Controller
 {
@@ -20,12 +21,13 @@ class DashboardController extends Controller
     {
         $stats = [
             'total_materials' => Material::count(),
-            'total_stock' => Material::sum('qty'),
+            // 'total_stock' => Material::sum('qty'),
+            'total_stock' => Material::sum('unrestricted_use_stock'), 
             'total_material_masuk' => MaterialMasuk::count(),
             'total_surat_jalan' => SuratJalan::count(),
         ];
-
-        return view('dashboard.index', compact('stats'));
+        $monitorings = Monitoring::all();
+        return view('dashboard.index', compact('stats','monitorings'));
     }
 
     /**
@@ -168,6 +170,8 @@ class DashboardController extends Controller
             ], 500);
         }
     }
+
+    
 
     /**
      * Export data material ke Excel

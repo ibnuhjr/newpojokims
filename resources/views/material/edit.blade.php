@@ -18,6 +18,17 @@
                 <form method="POST" action="{{ route('material.update', $material->id) }}">
                     @csrf
                     @method('PUT')
+                    @if ($errors->any())
+    <div class="alert alert-danger">
+        <strong>Error!</strong> Periksa input Anda:<br><br>
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
                     
                     <!-- Informasi Dasar -->
                     <div class="row mb-4">
@@ -61,7 +72,7 @@
                             @enderror
                         </div>
                         
-                        <div class="col-md-6 mb-3">
+                        <!-- <div class="col-md-6 mb-3">
                             <label for="pabrikan" class="form-label fw-semibold">
                                 Pabrikan <span class="text-danger">*</span>
                             </label>
@@ -75,9 +86,9 @@
                             @error('pabrikan')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                        </div>
+                        </div> -->
                         
-                        <div class="col-md-6 mb-3">
+                        <!-- <div class="col-md-6 mb-3">
                             <label for="normalisasi" class="form-label fw-semibold">
                                 Normalisasi
                             </label>
@@ -91,7 +102,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                    </div>
+                    </div> -->
                     
                     <!-- Informasi Company -->
                     <div class="row mb-4">
@@ -271,11 +282,12 @@
                                     name="base_unit_of_measure" 
                                     required>
                                 <option value="">Pilih Unit</option>
-                                <option value="PCS" {{ old('base_unit_of_measure', $material->base_unit_of_measure) == 'PCS' ? 'selected' : '' }}>PCS</option>
+                                <option value="BH" {{ old('base_unit_of_measure', $material->base_unit_of_measure) == 'BH' ? 'selected' : '' }}>BH</option>
                                 <option value="SET" {{ old('base_unit_of_measure', $material->base_unit_of_measure) == 'SET' ? 'selected' : '' }}>SET</option>
                                 <option value="M" {{ old('base_unit_of_measure', $material->base_unit_of_measure) == 'M' ? 'selected' : '' }}>M</option>
                                 <option value="KG" {{ old('base_unit_of_measure', $material->base_unit_of_measure) == 'KG' ? 'selected' : '' }}>KG</option>
-                                <option value="L" {{ old('base_unit_of_measure', $material->base_unit_of_measure) == 'L' ? 'selected' : '' }}>L</option>
+                                <option value="BTG" {{ old('base_unit_of_measure', $material->base_unit_of_measure) == 'BTG' ? 'selected' : '' }}>BTG</option>
+                                <option value="U" {{ old('base_unit_of_measure', $material->base_unit_of_measure) == 'U' ? 'selected' : '' }}>L</option>
                             </select>
                             @error('base_unit_of_measure')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -292,7 +304,7 @@
                             </h6>
                         </div>
                         
-                        <div class="col-md-4 mb-3">
+                        <!-- <div class="col-md-4 mb-3">
                             <label for="qty" class="form-label fw-semibold">
                                 Quantity <span class="text-danger">*</span>
                             </label>
@@ -306,26 +318,31 @@
                             @error('qty')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                        </div>
+                        </div> -->
                         
                         <div class="col-md-4 mb-3">
-                            <label for="unrestricted_use_stock" class="form-label fw-semibold">
-                                Unrestricted Stock <span class="text-danger">*</span>
-                            </label>
-                            <input type="number" 
-                                   class="form-control @error('unrestricted_use_stock') is-invalid @enderror" 
-                                   id="unrestricted_use_stock" 
-                                   name="unrestricted_use_stock" 
-                                   value="{{ old('unrestricted_use_stock', $material->unrestricted_use_stock) }}"
-                                   step="0.001"
-                                   min="0"
-                                   required>
-                            @error('unrestricted_use_stock')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div class="col-md-4 mb-3">
+    <label for="unrestricted_use_stock" class="form-label fw-semibold">
+        Unrestricted Stock <span class="text-danger">*</span>
+    </label>
+
+    <!-- Input yang terlihat (readonly) -->
+    <input type="number" 
+           class="form-control"
+           value="{{ $material->unrestricted_use_stock }}"
+           readonly>
+
+    <!-- Input hidden yang dikirim ke server -->
+    <input type="hidden" 
+           id="unrestricted_use_stock" 
+           name="unrestricted_use_stock" 
+           value="{{ $material->unrestricted_use_stock }}">
+
+    @error('unrestricted_use_stock')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+                        <!-- <div class="col-md-4 mb-3">
                             <label for="tanggal_terima" class="form-label fw-semibold">
                                 Tanggal Terima <span class="text-danger">*</span>
                             </label>
@@ -338,23 +355,30 @@
                             @error('tanggal_terima')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                        </div>
+                        </div> -->
                         
                         <div class="col-md-6 mb-3">
-                            <label for="harga_satuan" class="form-label fw-semibold">
-                                Harga Satuan (Rp) <span class="text-danger">*</span>
-                            </label>
-                            <input type="number" 
-                                   class="form-control @error('harga_satuan') is-invalid @enderror" 
-                                   id="harga_satuan" 
-                                   name="harga_satuan" 
-                                   value="{{ old('harga_satuan', $material->harga_satuan) }}"
-                                   min="0"
-                                   required>
-                            @error('harga_satuan')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+    <label for="harga_satuan" class="form-label fw-semibold">
+        Harga Satuan (Rp) <span class="text-danger">*</span>
+    </label>
+
+    <!-- Input yang terlihat (readonly) -->
+    <input type="number"
+           class="form-control"
+           value="{{ $material->harga_satuan }}"
+           readonly>
+
+    <!-- Hidden yang dikirim ke server -->
+    <input type="hidden"
+           id="harga_satuan"
+           name="harga_satuan"
+           value="{{ $material->harga_satuan }}">
+
+    @error('harga_satuan')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
                         
                         <div class="col-md-6 mb-3">
                             <label for="total_harga" class="form-label fw-semibold">
@@ -374,7 +398,7 @@
                     </div>
                     
                     <!-- Informasi Status & Keterangan -->
-                    <div class="row mb-4">
+                    <!-- <div class="row mb-4">
                         <div class="col-12">
                             <h6 class="text-primary border-bottom pb-2 mb-3">
                                 <i class="fa fa-info-circle me-1"></i>
@@ -432,9 +456,9 @@
                             @enderror
                         </div>
                     </div>
-                    
+                     -->
                     <!-- Hidden Fields -->
-                    <input type="hidden" name="valuation_type" value="{{ $material->valuation_type }}">
+                    <!-- <input type="hidden" name="valuation_type" value="{{ $material->valuation_type }}">
                     <input type="hidden" name="quality_inspection_stock" value="{{ $material->quality_inspection_stock }}">
                     <input type="hidden" name="blocked_stock" value="{{ $material->blocked_stock }}">
                     <input type="hidden" name="in_transit_stock" value="{{ $material->in_transit_stock }}">
@@ -442,7 +466,7 @@
                     <input type="hidden" name="wbs_element" value="{{ $material->wbs_element }}">
                     <input type="hidden" name="valuation_class" value="{{ $material->valuation_class }}">
                     <input type="hidden" name="valuation_description" value="{{ $material->valuation_description }}">
-                    
+                     -->
                     <!-- Action Buttons -->
                     <div class="row">
                         <div class="col-12">

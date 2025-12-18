@@ -154,13 +154,11 @@
                                         </div>
                                     </a>
                                 </li>
-                                <li class="list-group-item">
-                                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="media">
+                                    <a href="#" id="logout-link" class="media">
                                         <div class="media-body">
                                             <i class="fa fa-sign-out"></i> Logout
                                         </div>
                                     </a>
-                                </li>
                             </ul>
                         </div>
                     </li>
@@ -192,26 +190,85 @@
                             <div id="sidebarNav" class="panel-collapse collapse in" role="tabpanel">
                                 <div class="panel-body">
                                     <ul class="nav nav-pills nav-stacked">
+                                        {{-- Dashboard --}}
                                         <li class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
                                             <a href="{{ route('dashboard') }}">
                                                 <i class="fa fa-tachometer-alt"></i>
                                                 <span>Dashboard</span>
                                             </a>
                                         </li>
-                                        @if(auth()->user()->isAdmin())
-                                        <li class="{{ request()->routeIs('material-masuk.*') ? 'active' : '' }}">
-                                            <a href="{{ route('material-masuk.index') }}">
-                                                <i class="fa fa-arrow-down"></i>
-                                                <span>Material Masuk</span>
-                                            </a>
-                                        </li>
+
+                                        {{-- Material Masuk --}}
+                                        @if(auth()->user()->role === 'admin' || auth()->user()->role === 'guest')
+                                            <li class="{{ request()->routeIs('material-masuk.*') ? 'active' : '' }}">
+                                                <a href="{{ route('material-masuk.index') }}">
+                                                    <i class="fa fa-arrow-down"></i>
+                                                    <span>Material Masuk</span>
+                                                </a>
+                                            </li>
                                         @endif
-                                        <li class="{{ request()->routeIs('surat-jalan.index') ? 'active' : '' }}">
-                            <a href="{{ route('surat-jalan.index') }}">
+
+                                        {{-- Surat Jalan --}}
+                                        <li class="{{ request()->routeIs('surat-jalan.*') ? 'active' : '' }}">
+                                            <a href="{{ route('surat-jalan.index') }}">
                                                 <i class="fa fa-truck"></i>
                                                 <span>Surat Jalan</span>
                                             </a>
                                         </li>
+                                        {{-- Masa Peminjaman --}}
+                                        <li class="{{ request()->is('surat-jalan/peminjaman/masa') ? 'active' : '' }}">
+                                            <a href="{{ route('surat.masa', ['jenis' => 'Peminjaman']) }}">
+                                                <i class="fa fa-clock-o"></i>
+                                                <span>Masa Pengeluaran</span>
+                                            </a>
+                                        </li>           
+                                        <li class="{{ request()->routeIs('material.history') ? 'active' : '' }}">
+    <a href="{{ route('material.history') }}">
+        <i class="fas fa-history"></i> 
+        <span>Material Histories</span>
+    </a>
+</li>
+
+
+                             
+
+                                        {{-- Approval Surat Jalan --}}
+                                            @auth
+                                                @if(auth()->user()->role === 'guest')
+                                                <script>
+                                                document.addEventListener('DOMContentLoaded', function () {
+                                                    // Hilangkan semua tombol selain "View"
+                                                    document.querySelectorAll('.btn').forEach(btn => {
+                                                        // Biarkan tombol logout tetap hidup
+                                                        if (!btn.classList.contains('btn-info') && !btn.closest('#logout-form')) {
+                                                            btn.remove();
+                                                        }
+                                                    });
+
+                                                    // Disable semua input, select, textarea, button
+                                                    // tapi JANGAN disable yang ada di form logout
+                                                    document.querySelectorAll('input, select, textarea, button').forEach(el => {
+                                                        if (!el.closest('#logout-form')) {
+                                                            el.disabled = true;
+                                                        }
+                                                    });
+                                                });
+                                                </script>
+                                                @endif
+                                            @endauth
+                                            <li class="{{ request()->routeIs('material.pemeriksaanFisik') ? 'active' : '' }}">
+                                                <a href="{{ route('material.pemeriksaanFisik') }}">
+                                                    <i class="fa fa-file-text-o"></i>
+                                                    <span>Pemeriksaan Fisik</span>
+                                                </a>
+                                            </li>
+                                            <li class="{{ request()->routeIs('berita-acara.*') ? 'active' : '' }}">
+                                                <a href="{{ route('berita-acara.index') }}">
+                                                    <i class="fa fa-file-invoice"></i>
+                                                    <span>Berita Acara</span>
+                                                </a>
+                                            </li>
+
                                     </ul>
                                 </div>
                             </div>
@@ -271,32 +328,65 @@
     </div>
     <!--/ Application Content -->
 
-    <!-- Logout Form -->
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-        @csrf
-    </form>
+<!-- ✅ Logout Form -->
+<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+    @csrf
+</form>
 
-    <!-- ==========================================
-    ================= JavaScripts ===================
-    =========================================== -->
-    <!-- vendor js files -->
-    <script src="{{ asset('assets/js/vendor/jquery/jquery-1.11.2.min.js') }}"></script>
-    <script src="{{ asset('assets/js/vendor/bootstrap/bootstrap.min.js') }}"></script>
-    <!-- Animsition removed - using modern CSS animations -->
-    <script src="{{ asset('assets/js/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/js/vendor/datatables/extensions/dataTables.bootstrap.js') }}"></script>
-    <script src="{{ asset('assets/js/vendor/chosen/chosen.jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/js/vendor/summernote/summernote.min.js') }}"></script>
-    <script src="{{ asset('assets/js/vendor/jRespond/jRespond.min.js') }}"></script>
-    <script src="{{ asset('assets/js/vendor/slimscroll/jquery.slimscroll.min.js') }}"></script>
-    
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <!-- project main js files -->
-    <script src="{{ asset('assets/js/main.js') }}"></script>
-    <!--/ javascripts -->
-    
-    @stack('scripts')
+<!-- ==========================================
+================= JavaScripts ===================
+=========================================== -->
+<!-- vendor js files -->
+<script src="{{ asset('assets/js/vendor/jquery/jquery-1.11.2.min.js') }}"></script>
+<script src="{{ asset('assets/js/vendor/bootstrap/bootstrap.min.js') }}"></script>
+<script src="{{ asset('assets/js/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('assets/js/vendor/datatables/extensions/dataTables.bootstrap.js') }}"></script>
+<script src="{{ asset('assets/js/vendor/chosen/chosen.jquery.min.js') }}"></script>
+<script src="{{ asset('assets/js/vendor/summernote/summernote.min.js') }}"></script>
+<script src="{{ asset('assets/js/vendor/jRespond/jRespond.min.js') }}"></script>
+<script src="{{ asset('assets/js/vendor/slimscroll/jquery.slimscroll.min.js') }}"></script>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- project main js files -->
+<script src="{{ asset('vendor/animsition/js/animsition.min.js') }}"></script>
+<script src="{{ asset('assets/js/main.js') }}"></script>
+
+<!-- ✅ Perbaikan: Logout SweetAlert + CSRF aman -->
+<script>
+$(document).ready(function () {
+    // Tetap setup CSRF untuk Ajax request lainnya
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    });
+
+    // ✅ Logout dengan konfirmasi SweetAlert2 (tanpa trigger error 419)
+    const logoutLink = document.getElementById('logout-link');
+    const logoutForm = document.getElementById('logout-form');
+
+    if (logoutLink && logoutForm) {
+        logoutLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Logout?',
+                text: 'Apakah Anda yakin ingin keluar?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Logout',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    logoutForm.submit(); // form POST kirim @csrf -> aman dari 419
+                }
+            });
+        });
+    }
+});
+</script>
+
+@stack('scripts')
 </body>
 </html>

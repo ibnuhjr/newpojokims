@@ -6,6 +6,12 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\MaterialMasukController;
 use App\Http\Controllers\SuratJalanController;
+use App\Http\Controllers\MonitoringController;
+use App\Http\Controllers\MaterialHistoryController;
+use App\Http\Controllers\PemeriksaanFisikController;
+use App\Http\Controllers\BeritaAcaraController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -92,52 +98,87 @@ Route::middleware(['auth'])->group(function () {
     })->name('test.material');
     
     // Master Material Routes
-    Route::prefix('material')->name('material.')->group(function () {
-        Route::get('/', [MaterialController::class, 'index'])->name('index');
-        Route::get('/create', [MaterialController::class, 'create'])->name('create');
-        Route::post('/', [MaterialController::class, 'store'])->name('store');
-        Route::post('/import', [MaterialController::class, 'import'])->name('import');
-        
-        // DataTables AJAX endpoint
-        Route::get('/data/ajax', [MaterialController::class, 'getDataForDataTables'])->name('data.ajax');
-        
-        // Autocomplete dan Search - Available for all authenticated users
-        Route::get('/autocomplete', [MaterialController::class, 'autocomplete'])->name('autocomplete');
-        Route::get('/search', [MaterialController::class, 'search'])->name('search');
-        
-        // Stock Opname (Admin only) - HARUS SEBELUM ROUTE RESOURCE
-        Route::middleware('role:admin')->group(function () {
-            Route::get('/stock-opname', [MaterialController::class, 'stockOpname'])->name('stock-opname');
-            Route::get('/stock-opname/data', [MaterialController::class, 'getStockOpnameData'])->name('stock-opname.data');
-            Route::post('/stock-opname', [MaterialController::class, 'processStockOpname'])->name('stock-opname.process');
-            Route::post('/stock-opname/store', [MaterialController::class, 'storeStockOpname'])->name('stock-opname.store');
-        });
-        
-        // Input Material Masuk
-        Route::get('/input-masuk', [MaterialController::class, 'inputMaterialMasuk'])->name('input-masuk');
-        
-        // Resource routes - HARUS DI AKHIR
-        Route::get('/{material}', [MaterialController::class, 'show'])->name('show');
-        Route::get('/{material}/edit', [MaterialController::class, 'edit'])->name('edit');
-        Route::put('/{material}', [MaterialController::class, 'update'])->name('update');
-        Route::delete('/{material}', [MaterialController::class, 'destroy'])->name('destroy');
+Route::prefix('material')->name('material.')->group(function () {
+    // 📌 Export & History (pindah ke atas agar tidak tertangkap sebagai {material})
+    Route::get('/history/export/{id?}', [MaterialHistoryController::class, 'export'])->name('history.export');
+    Route::get('/history/export-pdf/{id}', [MaterialHistoryController::class, 'exportPdf'])->name('history.export-pdf');
+    Route::get('/history/{id?}', [MaterialHistoryController::class, 'index'])->name('history');
+
+    // ✅ Tambahkan route PDF kartu gantung jika perlu
+    Route::get('/{id}/kartu-gantung/pdf', [MaterialHistoryController::class, 'exportKartuGantung'])->name('kartu-gantung.pdf');
+
+    // 📦 Material CRUD & utility
+    Route::get('/', [MaterialController::class, 'index'])->name('index');
+    Route::get('/create', [MaterialController::class, 'create'])->name('create');
+    Route::post('/', [MaterialController::class, 'store'])->name('store');
+    Route::post('/import', [MaterialController::class, 'import'])->name('import');
+
+    Route::get('/data/ajax', [MaterialController::class, 'getDataForDataTables'])->name('data.ajax');
+    Route::get('/autocomplete', [MaterialController::class, 'autocomplete'])->name('autocomplete');
+    Route::get('/search', [MaterialController::class, 'search'])->name('search');
+
+    // 🛠️ Admin-only stock opname
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/stock-opname', [MaterialController::class, 'stockOpname'])->name('stock-opname');
+        Route::get('/stock-opname/data', [MaterialController::class, 'getStockOpnameData'])->name('stock-opname.data');
+        Route::post('/stock-opname', [MaterialController::class, 'processStockOpname'])->name('stock-opname.process');
+        Route::post('/stock-opname/store', [MaterialController::class, 'storeStockOpname'])->name('stock-opname.store');
     });
+
+    // ➕ Input material masuk
+    Route::get('/input-masuk', [MaterialController::class, 'inputMaterialMasuk'])->name('input-masuk');
+
+    // 🚨 HARUS PALING BAWAH! Agar tidak menangkap /history/export dsb.
+    Route::get('/{material}', [MaterialController::class, 'show'])
+    ->where('material', '[0-9]+')
+    ->name('show');
+
+Route::get('/{material}/edit', [MaterialController::class, 'edit'])
+    ->where('material', '[0-9]+')
+    ->name('edit');
+
+Route::put('/{material}', [MaterialController::class, 'update'])
+    ->where('material', '[0-9]+')
+    ->name('update');
+
+Route::delete('/{material}', [MaterialController::class, 'destroy'])
+    ->where('material', '[0-9]+')
+    ->name('destroy');
+
+});
+
     
-    // Material Masuk Routes
-    Route::prefix('material-masuk')->name('material-masuk.')->group(function () {
-        Route::get('/', [MaterialMasukController::class, 'index'])->name('index');
-        Route::get('/data', [MaterialMasukController::class, 'getData'])->name('data');
-        Route::get('/create', [MaterialMasukController::class, 'create'])->name('create');
-        Route::post('/', [MaterialMasukController::class, 'store'])->name('store');
-        Route::get('/{materialMasuk}', [MaterialMasukController::class, 'show'])->name('show');
-        Route::get('/{materialMasuk}/edit', [MaterialMasukController::class, 'edit'])->name('edit');
-        Route::put('/{materialMasuk}', [MaterialMasukController::class, 'update'])->name('update');
-        Route::delete('/{materialMasuk}', [MaterialMasukController::class, 'destroy'])->name('destroy');
-        
-        // Autocomplete routes
-        Route::get('/autocomplete/material', [MaterialMasukController::class, 'autocompleteMaterial'])->name('autocomplete.material');
-        Route::get('/autocomplete/normalisasi', [MaterialMasukController::class, 'autocompleteNormalisasi'])->name('autocomplete.normalisasi');
-    });
+Route::prefix('material-masuk')->group(function () {
+
+    // List & Data
+    Route::get('/', [MaterialMasukController::class, 'index'])->name('material-masuk.index');
+    Route::get('/data', [MaterialMasukController::class, 'getData'])->name('material-masuk.data');
+    Route::get('/daftar-sap', [MaterialMasukController::class, 'daftarSAP'])->name('material-masuk.daftar-sap');
+
+    // Create & Store
+    Route::get('/create', [MaterialMasukController::class, 'create'])->name('material-masuk.create');
+    Route::post('/', [MaterialMasukController::class, 'store'])->name('material-masuk.store');
+
+    // Edit & Update
+    Route::get('/{id}/edit', [MaterialMasukController::class, 'edit'])->name('material-masuk.edit');
+    Route::put('/{id}', [MaterialMasukController::class, 'update'])->name('material-masuk.update');
+
+    // ✅ Tambahkan di sini (SEBELUM show)
+    Route::put('/{id}/update-selesai', [MaterialMasukController::class, 'updateDanSelesaiSAP'])
+        ->name('material-masuk.updateDanSelesaiSAP');
+
+    // Selesai SAP (versi POST lama, bisa dipakai untuk API/manual trigger)
+    // Route::post('/selesai-sap/{id}', [MaterialMasukController::class, 'selesaiSAP'])->name('material-masuk.selesai-sap');
+
+    // Show & Delete (harus paling bawah)
+    Route::get('/{id}', [MaterialMasukController::class, 'show'])->name('material-masuk.show');
+    Route::delete('/{id}', [MaterialMasukController::class, 'destroy'])->name('material-masuk.destroy');
+
+    // Autocomplete
+    Route::get('/autocomplete/material', [MaterialMasukController::class, 'autocompleteMaterial'])->name('material-masuk.autocomplete.material');
+    Route::get('/autocomplete/normalisasi', [MaterialMasukController::class, 'autocompleteNormalisasi'])->name('material-masuk.autocomplete.normalisasi');
+});
+
     
     // Stock Opname Routes
     Route::prefix('stock-opname')->name('stock-opname.')->group(function () {
@@ -147,27 +188,40 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [MaterialController::class, 'storeStockOpname'])->name('store');
     });
     
-    // Surat Jalan Routes
-    Route::prefix('surat-jalan')->name('surat-jalan.')->group(function () {
-        Route::get('/', [SuratJalanController::class, 'index'])->name('index');
-        Route::get('/data', [SuratJalanController::class, 'getData'])->name('data');
-        Route::get('/create', [SuratJalanController::class, 'create'])->name('create');
-        Route::get('/generate-nomor', [SuratJalanController::class, 'generateNomor'])->name('generate-nomor');
-        
-        // Approval Surat Jalan - HARUS SEBELUM ROUTE DENGAN PARAMETER
-        Route::get('/approval', [SuratJalanController::class, 'approval'])->name('approval');
-        Route::get('/approval-data', [SuratJalanController::class, 'getApprovalData'])->name('approval-data');
-        
-        Route::post('/', [SuratJalanController::class, 'store'])->name('store');
-        Route::get('/{suratJalan}', [SuratJalanController::class, 'show'])->name('show');
-        Route::get('/{suratJalan}/modal-detail', [SuratJalanController::class, 'getModalDetail'])->name('modal-detail');
-        Route::get('/{suratJalan}/edit', [SuratJalanController::class, 'edit'])->name('edit');
-        Route::put('/{suratJalan}', [SuratJalanController::class, 'update'])->name('update');
-        Route::delete('/{suratJalan}', [SuratJalanController::class, 'destroy'])->name('destroy');
-        Route::post('/{suratJalan}/approve', [SuratJalanController::class, 'approve'])->name('approve');
-        Route::get('/{suratJalan}/export', [SuratJalanController::class, 'export'])->name('export');
-        Route::get('/{suratJalan}/export-excel', [SuratJalanController::class, 'exportExcel'])->name('export-excel');
-    });
+// Surat Jalan Routes
+    Route::get('/surat-jalan/data', [SuratJalanController::class, 'getData'])->name('surat-jalan.getData');
+Route::prefix('surat-jalan')->name('surat-jalan.')->group(function () {
+    Route::get('/', [SuratJalanController::class, 'index'])->name('index');
+    Route::get('/create', [SuratJalanController::class, 'create'])->name('create');
+    Route::post('/', [SuratJalanController::class, 'store'])->name('surat-jalan.store');
+    Route::post('/', [SuratJalanController::class, 'store'])->name('store');
+    Route::get('/generate-nomor', [SuratJalanController::class, 'generateNomor'])->name('generate-nomor');
+    Route::put('/{suratJalan}/selesai', [SuratJalanController::class, 'markAsSelesai'])->name('selesai');
+
+
+    // ✅ Route statis approval HARUS di atas parameter dinamis
+    Route::get('/approval', [SuratJalanController::class, 'approval'])->name('approval');
+    Route::get('/approval-data', [SuratJalanController::class, 'getApprovalData'])->name('approval-data');
+    // Route::patch('{suratJalan}/approve', [SuratJalanController::class, 'approve'])->name('surat-jalan.approval');
+
+
+    // ✅ Edit, Update, Delete
+    Route::get('/{suratJalan}/edit', [SuratJalanController::class, 'edit'])->name('edit');
+    Route::put('/{suratJalan}', [SuratJalanController::class, 'update'])->name('update');
+    Route::delete('/{suratJalan}', [SuratJalanController::class, 'destroy'])->name('destroy');
+
+    // ✅ Modal detail DITARUH DI ATAS show agar tidak ditangkap show()
+    Route::get('/{suratJalan}/modal-detail', [SuratJalanController::class, 'getModalDetail'])->name('modal-detail');
+
+    // ✅ Show detail (halaman biasa)
+    Route::get('/{suratJalan}', [SuratJalanController::class, 'show'])->name('show');
+
+    // ✅ Approve & Export
+    Route::post('/{suratJalan}/approve', [SuratJalanController::class, 'approve'])->name('approve');
+    Route::get('/{suratJalan}/export', [SuratJalanController::class, 'export'])->name('export');
+    Route::get('/{suratJalan}/export-excel', [SuratJalanController::class, 'exportExcel'])->name('export-excel');
+});
+
     
     // Admin Only Routes
     Route::middleware(['role:admin'])->group(function () {
@@ -184,9 +238,10 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // API Routes untuk AJAX calls
-Route::prefix('api')->middleware(['auth'])->group(function () {
+Route::prefix('api')->group(function () {
     Route::get('/materials/search', [MaterialController::class, 'search'])->name('api.materials.search');
-    Route::get('/dashboard/stats', [DashboardController::class, 'getStats'])->name('api.dashboard.stats');
+    Route::get('/dashboard/stats', [DashboardController::class, 'getStats'])->middleware('auth')->name('api.dashboard.stats');
+    Route::get('/material/{id}', [MaterialController::class, 'getMaterialById'])->middleware('auth')->name('api.material.detail');
 });
 
 // Health Check
@@ -202,3 +257,55 @@ Route::get('/health', function () {
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });
+
+Route::get('/surat-jalan/{jenis}/masa', [SuratJalanController::class, 'masa'])->name('surat.masa');
+Route::put('/surat-jalan/{surat}/kembalikan/{detail}', [SuratJalanController::class, 'kembalikan'])
+    ->name('barang.kembalikan');
+    Route::delete('/surat-jalan/masa/{surat}/{detail}', [SuratJalanController::class, 'hapusDetailMasa'])
+     ->name('masa.detail.hapus');
+
+// Route::get('/surat-jalan/masa', [SuratJalanController::class, 'masa'])->name('surat.masa');
+// Route::get('/materials/{id}/history', [MaterialController::class, 'history'])->name('material.history');
+// Route::get('/materials/{id}/history/export', [MaterialHistoryController::class, 'export'])
+//     ->name('material.history.export');
+Route::put('/surat-jalan/{suratId}/kembalikan/{detailId}', [SuratJalanController::class, 'kembalikan'])->name('surat-jalan.kembalikan');
+Route::get('/surat-jalan/{suratId}/detail/{detailId}/kembalikan', [SuratJalanController::class, 'showReturnForm'])
+     ->name('surat-jalan.kembalikan.form');
+Route::get('/surat-jalan/{detail}/history', [App\Http\Controllers\SuratJalanController::class, 'getHistory'])
+    ->name('surat-jalan.history');
+Route::delete('/surat-masa/{surat}/{detail}', [SuratJalanController::class, 'hapusDetailMasa'])
+    ->name('surat.masa.hapus-detail');
+
+
+
+// Route::get('/material/{id}/history', [MaterialHistoryController::class, 'index'])
+//     ->name('material.history');
+// Route::get('/materials/history', [MaterialHistoryController::class, 'all'])
+//     ->name('materials.history');
+// Route::get('/material/history/{id?}', [MaterialHistoryController::class, 'index'])->name('material.history');
+// Route::get('/material/history/export/{id?}', [MaterialHistoryController::class, 'export'])->name('material.history.export');
+
+// Route::get('/material/{id}/history', [MaterialHistoryController::class, 'index'])
+//     ->name('material.history');
+Route::get('/autocomplete-material', [MaterialMasukController::class, 'autocomplete'])->name('material.autocomplete');
+Route::get('/materials/{id}/history/export-pdf', [MaterialHistoryController::class, 'exportPdf']);
+Route::get('/material/{id}/kartu-gantung/pdf', [MaterialHistoryController::class, 'exportKartuGantung'])
+    ->name('material.kartu-gantung.pdf');
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('laporan')->group(function () {
+        Route::get('/pemeriksaan-fisik', [PemeriksaanFisikController::class, 'index'])
+    ->name('material.pemeriksaanFisik');
+    });
+});
+
+
+Route::get('/berita-acara', [BeritaAcaraController::class, 'index'])
+    ->name('berita-acara.index');
+Route::post('/berita-acara', [BeritaAcaraController::class, 'store'])
+    ->name('berita-acara.store');
+Route::resource('berita-acara', BeritaAcaraController::class);
+Route::get('/berita-acara/{id}/pdf', 
+    [BeritaAcaraController::class, 'pdf']
+)->name('berita-acara.pdf');

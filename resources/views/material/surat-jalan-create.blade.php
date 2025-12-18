@@ -50,9 +50,11 @@
                                         required>
                                     <option value="">Pilih Jenis Surat Jalan</option>
                                     <option value="Normal" selected>Normal</option>
-                                    <option value="Gangguan">Gangguan</option>
                                     <option value="Garansi">Garansi</option>
                                     <option value="Peminjaman">Peminjaman</option>
+                                    <option value="Perbaikan">Perbaikan</option>
+                                    <option value="Manual">Manual</option>
+
                                 </select>
                             </div>
                             
@@ -134,6 +136,10 @@
                             </div>
                             
                             <div class="col-12 mb-3">
+                                <div id="manualNotice" class="alert alert-info d-none">
+                                    <i class="fa fa-info-circle me-1"></i>
+                                    Mode <strong>Manual</strong> aktif. Isi nama barang secara bebas tanpa memilih dari daftar material.
+                                </div>
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="materialTable">
                                         <thead class="table-light">
@@ -559,6 +565,10 @@ function checkDuplicateMaterials() {
 
 // Form validation
 document.getElementById('suratJalanForm').addEventListener('submit', function(e) {
+// Skip validasi stok kalau jenis Manual
+const jenis = document.getElementById('jenis_surat_jalan').value;
+if (jenis === 'Manual') return true;
+
     const materialIds = document.querySelectorAll('.material-id');
     let hasValidMaterial = false;
     let hasStockError = false;
@@ -605,5 +615,58 @@ document.getElementById('suratJalanForm').addEventListener('submit', function(e)
         return false;
     }
 });
+// === Toggle mode Manual ===
+document.addEventListener('DOMContentLoaded', function() {
+    const jenisSelect = document.getElementById('jenis_surat_jalan');
+    const table = document.getElementById('materialTable');
+    const notice = document.getElementById('manualNotice');
+
+    function toggleManualMode() {
+        const isManual = jenisSelect.value === 'Manual';
+        notice.classList.toggle('d-none', !isManual);
+
+        // Ganti label tabel
+        table.querySelector('th:nth-child(2)').textContent = isManual ? 'Nama Barang (Manual)' : 'Material';
+        table.querySelector('th:nth-child(3)').textContent = isManual ? '-' : 'Stock';
+
+        // Ubah setiap baris sesuai mode
+        table.querySelectorAll('tbody tr').forEach((row, index) => {
+            const materialTd = row.querySelector('td:nth-child(2)');
+            const stockInput = row.querySelector('input[name*="[stock]"]');
+            const satuanInput = row.querySelector('input[name*="[satuan]"]');
+
+            if (isManual) {
+                materialTd.innerHTML = `
+                    <input type="text" class="form-control form-control-sm"
+                           name="materials[${index}][nama_barang]"
+                           placeholder="Nama barang manual..." required>
+                `;
+
+                // aktifkan kolom satuan agar bisa diketik
+                satuanInput.readOnly = false;
+                satuanInput.required = true;
+                satuanInput.placeholder = "Isi satuan (misal: pcs, kg)";
+                stockInput.value = '';
+                stockInput.disabled = true;
+            } else {
+                materialTd.innerHTML = `
+                    <input type="text" class="form-control form-control-sm material-autocomplete"
+                           name="materials[${index}][material_search]"
+                           placeholder="Ketik untuk mencari material..." autocomplete="off" required>
+                    <input type="hidden" name="materials[${index}][material_id]" class="material-id">
+                    <div class="autocomplete-results" style="display:none;position:absolute;z-index:1000;background:white;border:1px solid #ddd;max-height:400px;overflow-y:auto;width:200%;"></div>
+                `;
+                stockInput.disabled = false;
+                satuanInput.readOnly = true;
+                satuanInput.placeholder = '';
+                initializeAutocomplete(row.querySelector('.material-autocomplete'));
+            }
+        });
+    }
+
+    jenisSelect.addEventListener('change', toggleManualMode);
+});
+
+
 </script>
 @endpush

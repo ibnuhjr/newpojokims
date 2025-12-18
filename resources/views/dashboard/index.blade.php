@@ -3,8 +3,319 @@
 @section('title', 'Dashboard - Pojok IMS')
 
 @section('content')
-<div class="dashboard-container">
+<style>
+    body {
+        background: #f6f6f6;
+        font-family: Calibri, Arial, sans-serif;
+    }
 
+    .monitoring-section {
+    margin-top: 20px;
+    margin-bottom: 40px; /* ✅ jarak bawah ditambah */
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+    .monitoring-title {
+        background: #0b73a6;
+        color: #fff;
+        font-weight: 700;
+        padding: 8px 10px;
+        font-size: 15px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        text-align: center;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        padding: 8px;
+    }
+
+    .excel-table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 1300px; /* ↓ dari 1800px ke 1300px */
+        table-layout: fixed;
+        font-size: 12px; /* ↓ sedikit biar lebih kompak */
+    }
+
+    .excel-table th,
+    .excel-table td {
+        border: 1px solid #c7c7c7;
+        padding: 6px 4px; /* ↓ padding biar padat */
+        vertical-align: middle;
+        text-align: center;
+        word-break: break-word;
+    }
+
+    .excel-table thead th {
+        background: #dfeaf6;
+        font-weight: 700;
+        color: #133b4a;
+    }
+
+    .excel-table thead tr.subhead th {
+        background: #eef6fb;
+        font-weight: 600;
+    }
+
+    .excel-table tbody tr:nth-child(even) {
+        background: #fbfdff;
+    }
+
+    .excel-table tbody tr:hover {
+        background: #eef7ff;
+    }
+
+    .excel-table td.left {
+        text-align: left;
+        padding-left: 6px;
+    }
+
+    .highlight-yellow {
+        background: #fff4cc;
+    }
+
+    .highlight-pink {
+        background: #ffd6d6;
+    }
+
+    .highlight-green {
+        background: #e6f7e6;
+    }
+
+    .highlight-blue {
+        background: #d6e9ff;
+    }
+
+    /* Responsive tweak biar tetap enak dibaca di layar kecil */
+    @media (max-width: 1400px) {
+        .excel-table {
+            font-size: 11px;
+            min-width: 1100px;
+        }
+        .excel-table th, .excel-table td {
+            padding: 5px 3px;
+        }
+    }
+
+    @media (max-width: 1000px) {
+        .excel-table {
+            font-size: 10px;
+            min-width: 900px;
+        }
+    }
+</style>
+
+<!-- <div class="monitoring-section">
+    <div class="monitoring-title">MONITORING PENCAPAIAN LM 1 KUMULATIF - UP3 CIMAHI</div>
+
+    <div class="table-wrapper">
+        <table class="excel-table">
+            <thead>
+                <tr>
+                    <th rowspan="3" style="width:40px">NO</th>
+                    <th rowspan="3" style="min-width:100px">UNIT</th>
+                    <th rowspan="3" style="min-width:80px">TARGET<br>HARIAN</th>
+                    <th colspan="3">LEAD MEASURES (LOGISTIK)</th>
+                    <th rowspan="3">JML<br>REALISASI<br>HARIAN</th>
+                    <th rowspan="3">PENCAPAIAN<br>HARIAN</th>
+                    <th colspan="4">NILAI PERSEDIAAN</th>
+                    <th colspan="4">PENCAPAIAN LM 1 KUMULATIF</th>
+                    <th colspan="3">RASIO PERPUTARAN MATERIAL</th>
+                </tr>
+                <tr class="subhead">
+                    <th>LM1<br><small>B1-EFF</small></th>
+                    <th>LM2<br><small>B1-DAL</small></th>
+                    <th>LM3<br><small>B2-SAR</small></th>
+                    <th>PENERIMAAN<br><small>MATERIAL</small></th>
+                    <th>TARGET</th>
+                    <th>REALISASI</th>
+                    <th>SALDO<br><small>SEBELUMNYA</small></th>
+                    <th>TARGET</th>
+                    <th>REALISASI</th>
+                    <th>% PEMAKAIAN</th>
+                    <th>% PENCAPAIAN</th>
+                    <th>TARGET<br><small>JAN–SEPT</small></th>
+                    <th>REALISASI<br><small>JAN–SEPT</small></th>
+                    <th>% ITO</th>
+                </tr>
+                <tr>
+                    <th class="highlight-yellow">(Rp)</th>
+                    <th class="highlight-pink">(Rp)</th>
+                    <th class="highlight-pink">(Rp)</th>
+                    <th class="highlight-green">(Rp)</th>
+                    <th class="highlight-yellow">(Rp)</th>
+                    <th class="highlight-pink">(Rp)</th>
+                    <th class="highlight-pink">(Rp)</th>
+                    <th class="highlight-yellow">(Rp)</th>
+                    <th class="highlight-pink">(Rp)</th>
+                    <th class="highlight-blue">%</th>
+                    <th class="highlight-blue">%</th>
+                    <th class="highlight-blue">x</th>
+                    <th class="highlight-blue">x</th>
+                    <th class="highlight-pink">%</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td class="left">UP3 CIMAHI</td>
+                    <td class="highlight-yellow">133,453.266</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td>0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-green">8,540,587,691</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-pink">79,009,276,251</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">0%</td>
+                    <td class="highlight-blue">9.71</td>
+                    <td class="highlight-blue">6.23</td>
+                    <td class="highlight-pink">64%</td>
+                    <td class="highlight-pink">-</td>
+                    <td class="highlight-pink">-</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td class="left">ULP CIMAHI KOTA</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td>0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-green">8,540,587,691</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-pink">79,009,276,251</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">0%</td>
+                    <td class="highlight-blue">9.71</td>
+                    <td class="highlight-blue">6.23</td>
+                    <td class="highlight-pink">64%</td>
+                    <td class="highlight-pink">-</td>
+                    <td class="highlight-pink">-</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td class="left">ULP PADALARANG</td>
+                    <td class="highlight-yellow">50,000.000</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td>0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-green">2,000,000,000</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-pink">10,000,000,000</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">0%</td>
+                    <td class="highlight-blue">9.71</td>
+                    <td class="highlight-blue">6.23</td>
+                    <td class="highlight-pink">64%</td>
+                    <td class="highlight-pink">-</td>
+                    <td class="highlight-pink">-</td>
+                </tr>
+
+                <tr>
+                    <td>4</td>
+                    <td class="left">ULP LEMBANG</td>
+                    <td class="highlight-yellow">40,500.000</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td>0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-green">1,800,000,000</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-pink">9,500,000,000</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">0%</td>
+                    <td class="highlight-blue">9.71</td>
+                    <td class="highlight-blue">6.23</td>
+                    <td class="highlight-pink">64%</td>
+                    <td class="highlight-pink">-</td>
+                    <td class="highlight-pink">-</td>
+                </tr>
+
+                <tr>
+                    <td>5</td>
+                    <td class="left">ULP CILILIN</td>
+                    <td class="highlight-yellow">30,250.300</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td>0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-green">1,200,000,000</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-pink">8,000,000,000</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">0%</td>
+                    <td class="highlight-blue">9.71</td>
+                    <td class="highlight-blue">6.23</td>
+                    <td class="highlight-pink">64%</td>
+                    <td class="highlight-pink">-</td>
+                    <td class="highlight-pink">-</td>
+                </tr>
+
+                <tr>
+                    <td>6</td>
+                    <td class="left">ULP RAZAMANDALA</td>
+                    <td class="highlight-yellow">25,000.000</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td>0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-green">900,000,000</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-pink">6,500,000,000</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">0%</td>
+                    <td class="highlight-blue">9.71</td>
+                    <td class="highlight-blue">6.23</td>
+                    <td class="highlight-pink">64%</td>
+                    <td class="highlight-pink">-</td>
+                    <td class="highlight-pink">-</td>
+                </tr>
+
+                <tr>
+                    <td>7</td>
+                    <td class="left">ULP CIMAHI SELATAN</td>
+                    <td class="highlight-yellow">60,000.000</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td class="highlight-pink">0</td>
+                    <td>0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-green">2,500,000,000</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">#DIV/0!</td>
+                    <td class="highlight-pink">11,000,000,000</td>
+                    <td class="highlight-yellow">0</td>
+                    <td class="highlight-pink">0%</td>
+                    <td class="highlight-blue">9.71</td>
+                    <td class="highlight-blue">6.23</td>
+                    <td class="highlight-pink">64%</td>
+                    <td class="highlight-pink">-</td>
+                    <td class="highlight-pink">-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div> -->
     <!-- Statistics Cards -->
 <div class="row mb-4">
     <div class="col-lg-3 col-md-6 col-sm-12">
@@ -214,12 +525,10 @@ function viewDetail(id) {
                         <div class="col-md-6">
                             <h6 class="text-primary">Informasi Dasar</h6>
                             <table class="table table-sm">
-                                <tr><td><strong>Nomor:</strong></td><td>${material.nomor}</td></tr>
                                 <tr><td><strong>Material Code:</strong></td><td>${material.material_code}</td></tr>
                                 <tr><td><strong>Deskripsi:</strong></td><td>${material.material_description}</td></tr>
                                 <tr><td><strong>Stock:</strong></td><td>${material.unrestricted_use_stock} ${material.base_unit_of_measure}</td></tr>
                                 <tr><td><strong>Rak:</strong></td><td>${material.rak}</td></tr>
-                                <tr><td><strong>Status:</strong></td><td><span class="badge bg-info">${material.status}</span></td></tr>
                             </table>
                         </div>
                         <div class="col-md-6">
@@ -237,18 +546,10 @@ function viewDetail(id) {
                     <div class="row mt-3">
                         <div class="col-12">
                             <h6 class="text-primary">Informasi Stock & Harga</h6>
-                            <table class="table table-sm">
+                                <table class="table table-sm">
                                 <tr>
                                     <td><strong>Unrestricted Stock:</strong></td>
                                     <td>${material.unrestricted_use_stock}</td>
-                                    <td><strong>Quality Inspection:</strong></td>
-                                    <td>${material.quality_inspection_stock}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Blocked Stock:</strong></td>
-                                    <td>${material.blocked_stock}</td>
-                                    <td><strong>In Transit:</strong></td>
-                                    <td>${material.in_transit_stock}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Harga Satuan:</strong></td>
@@ -261,13 +562,7 @@ function viewDetail(id) {
                     </div>
                     <div class="row mt-3">
                         <div class="col-12">
-                            <h6 class="text-primary">Informasi Tambahan</h6>
-                            <table class="table table-sm">
-                                <tr><td><strong>Tanggal Terima:</strong></td><td>${new Date(material.tanggal_terima).toLocaleDateString('id-ID')}</td></tr>
-                                <tr><td><strong>Keterangan:</strong></td><td>${material.keterangan || '-'}</td></tr>
-                                <tr><td><strong>Normalisasi:</strong></td><td>${material.normalisasi || '-'}</td></tr>
-                                <tr><td><strong>WBS Element:</strong></td><td>${material.wbs_element || '-'}</td></tr>
-                            </table>
+                            
                         </div>
                     </div>
                 `;
@@ -485,8 +780,12 @@ function importData() {
                     Swal.fire('Error!', errorMessage, 'error');
                 }
             });
-        }
+        } 
     });
 }
 </script>
 @endpush
+
+
+
+

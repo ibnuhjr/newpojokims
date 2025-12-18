@@ -14,6 +14,12 @@
                         <i class="fa fa-plus"></i> Tambah Material Masuk
                     </a>
                     </div>
+                    <!-- <div class="card-tools">
+    <a href="{{ route('material-masuk.daftar-sap') }}" class="btn btn-success">
+        <i class="fa fa-check"></i> Selesai SAP
+    </a>
+</div> -->
+
                 </div>
                 <div class="card-body">
                     <!-- Alert Messages -->
@@ -40,17 +46,24 @@
                     <div class="table-responsive">
                         <table id="materialMasukTable" class="table table-bordered table-striped">
                             <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Tanggal Masuk</th>
-                                    <th>Nomor KR</th>
-                                    <th>Pabrikan</th>
-                                    <th>Material</th>
-                                    <th>Total Qty</th>
-                                    <th>Dibuat Oleh</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Tanggal Masuk</th>
+                                        <!-- <th>Tanggal Keluar</th>
+                                        <th>Jenis</th> -->
+                                        <th>Nomor KR</th>
+                                        <!-- <th>Nomor PO</th>
+                                        <th>Nomor DOC</th> -->
+                                        <!-- <th>Tug 4</th> -->
+                                        <th>Pabrikan</th>
+                                        <th>Material</th>   
+                                        <th>Total Qty</th>
+                                        <th>Dibuat Oleh</th>
+                                        <th>Status SAP</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+
                         </table>
                     </div>
                 </div>
@@ -87,16 +100,33 @@ $(document).ready(function() {
         processing: true,
         serverSide: true,
         ajax: '{{ route("material-masuk.data") }}',
+        // columns: [
+        //     { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+        //     { data: 'tanggal_masuk_formatted', name: 'tanggal_masuk' },
+        //     { data: 'nomor_kr', name: 'nomor_kr' },
+        //     { data: 'pabrikan', name: 'pabrikan' },
+        //     { data: 'material_info', name: 'material_info', orderable: false, searchable: false },
+        //     { data: 'total_quantity', name: 'total_quantity', orderable: false },
+        //     { data: 'creator_name', name: 'creator.nama' },
+        //     { data: 'action', name: 'action', orderable: false, searchable: false }
+        // ],
         columns: [
-            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-            { data: 'tanggal_masuk_formatted', name: 'tanggal_masuk' },
-            { data: 'nomor_kr', name: 'nomor_kr' },
-            { data: 'pabrikan', name: 'pabrikan' },
-            { data: 'material_info', name: 'material_info', orderable: false, searchable: false },
-            { data: 'total_quantity', name: 'total_quantity', orderable: false },
-            { data: 'creator_name', name: 'creator.nama' },
-            { data: 'action', name: 'action', orderable: false, searchable: false }
-        ],
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: 'tanggal_masuk_formatted', name: 'tanggal_masuk' },
+                // { data: 'tanggal_keluar_formatted', name: 'tanggal_keluar' },
+                // { data: 'jenis', name: 'jenis' },
+                { data: 'nomor_kr', name: 'nomor_kr' },
+                // { data: 'nomor_po', name: 'nomor_po' },
+                // { data: 'nomor_doc', name: 'nomor_doc' },
+                // { data: 'tugas_4', name: 'tugas_4' },
+                { data: 'pabrikan', name: 'pabrikan' },
+                { data: 'material_info', name: 'material_info', orderable: false, searchable: false },
+                { data: 'total_quantity', name: 'total_quantity', orderable: false },
+                { data: 'creator_name', name: 'creator.nama' },
+                { data: 'status_sap', name: 'status_sap' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ],
+
         responsive: true,
         order: [[1, 'desc']],
         pageLength: 25,
@@ -106,6 +136,90 @@ $(document).ready(function() {
     });
 });
 
+// function showDetail(id) {
+//     $.ajax({
+//         url: '{{ route("material-masuk.index") }}/' + id,
+//         type: 'GET',
+//         success: function(response) {
+//             if (response.success) {
+//                 let data = response.data;
+//                 let detailHtml = `
+//                     <div class="row">
+//                         <div class="col-md-6">
+//                             <table class="table table-borderless">
+//                                 <tr>
+//                                     <td><strong>Nomor KR:</strong></td>
+//                                     <td>${data.nomor_kr || '-'}</td>
+//                                 </tr>
+//                                 <tr>
+//                                     <td><strong>Pabrikan:</strong></td>
+//                                     <td>${data.pabrikan || '-'}</td>
+//                                 </tr>
+//                                 <tr>
+//                                     <td><strong>Tanggal Masuk:</strong></td>
+//                                     <td>${data.tanggal_masuk}</td>
+//                                 </tr>
+//                             </table>
+//                         </div>
+//                         <div class="col-md-6">
+//                             <table class="table table-borderless">
+//                                 <tr>
+//                                     <td><strong>Dibuat Oleh:</strong></td>
+//                                     <td>${data.created_by}</td>
+//                                 </tr>
+//                                 <tr>
+//                                     <td><strong>Tanggal Dibuat:</strong></td>
+//                                     <td>${data.created_at}</td>
+//                                 </tr>
+//                                 <tr>
+//                                     <td><strong>Keterangan:</strong></td>
+//                                     <td>${data.keterangan || '-'}</td>
+//                                 </tr>
+//                             </table>
+//                         </div>
+//                     </div>
+//                     <hr>
+//                     <h6><strong>Detail Material:</strong></h6>
+//                     <div class="table-responsive">
+//                         <table class="table table-bordered table-sm">
+//                             <thead class="thead-light">
+//                                 <tr>
+//                                     <th>Kode Material</th>
+//                                     <th>Deskripsi Material</th>
+//                                     <th>Quantity</th>
+//                                     <th>Satuan</th>
+//                                     <th>Normalisasi</th>
+//                                 </tr>
+//                             </thead>
+//                             <tbody>`;
+                
+//                 data.details.forEach(function(detail) {
+//                     detailHtml += `
+//                         <tr>
+//                             <td>${detail.material_code}</td>
+//                             <td>${detail.material_description}</td>
+//                             <td>${detail.quantity}</td>
+//                             <td>${detail.satuan}</td>
+//                             <td>${detail.normalisasi || '-'}</td>
+//                         </tr>`;
+//                 });
+                
+//                 detailHtml += `
+//                             </tbody>
+//                         </table>
+//                     </div>`;
+                
+//                 $('#detailModalBody').html(detailHtml);
+//                 $('#detailModal').modal('show');
+//             } else {
+//                 Swal.fire('Error!', 'Gagal memuat detail data.', 'error');
+//             }
+//         },
+//         error: function() {
+//             Swal.fire('Error!', 'Terjadi kesalahan saat memuat detail data.', 'error');
+//         }
+//     });
+// }
 function showDetail(id) {
     $.ajax({
         url: '{{ route("material-masuk.index") }}/' + id,
@@ -116,23 +230,47 @@ function showDetail(id) {
                 let detailHtml = `
                     <div class="row">
                         <div class="col-md-6">
-                            <table class="table table-borderless">
+                            <table class="table table-borderless table-sm">
                                 <tr>
                                     <td><strong>Nomor KR:</strong></td>
                                     <td>${data.nomor_kr || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nomor PO:</strong></td>
+                                    <td>${data.nomor_po || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Nomor DOC:</strong></td>
+                                    <td>${data.nomor_doc || '-'}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Pabrikan:</strong></td>
                                     <td>${data.pabrikan || '-'}</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Tanggal Masuk:</strong></td>
-                                    <td>${data.tanggal_masuk}</td>
+                                    <td><strong>Jenis:</strong></td>
+                                    <td>${data.jenis || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status SAP:</strong></td>
+                                    <td>${data.status_sap || '-'}</td>
                                 </tr>
                             </table>
                         </div>
                         <div class="col-md-6">
-                            <table class="table table-borderless">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td><strong>Tanggal Masuk:</strong></td>
+                                    <td>${data.tanggal_masuk}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tanggal Keluar:</strong></td>
+                                    <td>${data.tanggal_keluar || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tug 4:</strong></td>
+                                    <td>${data.tugas_4 || '-'}</td>
+                                </tr>
                                 <tr>
                                     <td><strong>Dibuat Oleh:</strong></td>
                                     <td>${data.created_by}</td>
